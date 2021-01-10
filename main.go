@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	aw "github.com/deanishe/awgo"
-	"github.com/ishii1648/sample-alfred-workflow/workflow"
+	"github.com/ishii1648/alfred-gcp-console-services-workflow/workflow"
 )
 
 var (

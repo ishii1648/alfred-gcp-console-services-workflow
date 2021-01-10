@@ -1,9 +1,11 @@
-package workflow
+package gcp
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 type GcpService struct {
@@ -33,4 +35,12 @@ func (g *GcpService) GetName() string {
 		return g.ShortName + " – " + g.Name
 	}
 	return g.Name
+}
+
+func (g *GcpService) GetIcon() string {
+	iconPath := fmt.Sprintf("images/%s.png", g.Id)
+	if _, err := os.Stat(iconPath); err != nil {
+		return "images/gcp.png"
+	}
+	return iconPath
 }
