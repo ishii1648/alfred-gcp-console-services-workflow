@@ -5,6 +5,9 @@
   description: Containers package an application so it can be easily deployed to run in its own isolated environment
   url: https://console.cloud.google.com/kubernetes/list
   sub_services:
+    - id: clusters
+      name: Clusters
+      url: https://console.cloud.google.com/kubernetes/list
     - id: workloads
       name: Workloads
       url: https://console.cloud.google.com/kubernetes/workload
@@ -14,9 +17,6 @@
     - id: applications
       name: Applications
       url: https://console.cloud.google.com/kubernetes/application
-    - id: configuration
-      name: Configuration
-      url: https://console.cloud.google.com/kubernetes/config
 
 - id: cloudrun
   name: Cloud Run

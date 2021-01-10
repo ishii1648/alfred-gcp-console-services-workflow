@@ -2,16 +2,19 @@ package workflow
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	aw "github.com/deanishe/awgo"
+	"github.com/ishii1648/alfred-gcp-console-services-workflow/gcp"
+	"github.com/ishii1648/alfred-gcp-console-services-workflow/searchers"
 )
 
 func Run(wf *aw.Workflow, rawQuery string, ymlPath string) {
-	gcpServices := ParseConsoleServicesYml(ymlPath)
+	gcpServices := gcp.ParseConsoleServicesYml(ymlPath)
 	parser := NewParser(strings.NewReader(rawQuery))
 	query := parser.Parse()
 	defer finalize(wf)
@@ -27,7 +30,9 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string) {
 		return
 	}
 
-	var gcpService *GcpService
+	ctx := context.Background()
+
+	var gcpService *gcp.GcpService
 	for i := range gcpServices {
 		if gcpServices[i].Id == query.ServiceId {
 			gcpService = &gcpServices[i]
@@ -45,12 +50,26 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string) {
 			return
 		}
 
-		var subService *GcpService
+		var subService *gcp.GcpService
 		for i := range gcpService.SubServices {
 			if gcpService.SubServices[i].Id == query.SubServiceId {
 				subService = &gcpService.SubServices[i]
 				break
 			}
+		}
+
+		serviceId := query.ServiceId
+		if query.SubServiceId != "" {
+			serviceId += "_" + query.SubServiceId
+		}
+		searcher := searchers.SearchersByServiceId[serviceId]
+		if searcher != nil {
+			filterQuery = ""
+			err := searcher.Search(ctx, wf, gcpProject, *gcpService)
+			if err != nil {
+				wf.FatalError(err)
+			}
+			return
 		}
 
 		if subService == nil {
@@ -84,19 +103,19 @@ func handleEmptyQuery(wf *aw.Workflow) {
 	}
 }
 
-func SearchServices(wf *aw.Workflow, gcpServices []GcpService, gcpProject string) {
+func SearchServices(wf *aw.Workflow, gcpServices []gcp.GcpService, gcpProject string) {
 	for i := range gcpServices {
 		AddServiceToWorkflow(wf, gcpServices[i], gcpProject)
 	}
 }
 
-func SearchSubServices(wf *aw.Workflow, gcpService GcpService, gcpProject string) {
+func SearchSubServices(wf *aw.Workflow, gcpService gcp.GcpService, gcpProject string) {
 	for _, subService := range gcpService.SubServices {
 		AddSubServiceToWorkflow(wf, gcpService, subService, gcpProject)
 	}
 }
 
-func AddServiceToWorkflow(wf *aw.Workflow, gcpService GcpService, gcpProject string) {
+func AddServiceToWorkflow(wf *aw.Workflow, gcpService gcp.GcpService, gcpProject string) {
 	title := gcpService.Id
 
 	subtitle := ""
@@ -117,10 +136,10 @@ func AddServiceToWorkflow(wf *aw.Workflow, gcpService GcpService, gcpProject str
 		Autocomplete(gcpService.Id + " ").
 		UID(gcpService.Id).
 		Arg(fmt.Sprintf("%s?project=%s", gcpService.Url, gcpProject)).
-		Icon(&aw.Icon{Value: GetIcon(&gcpService)})
+		Icon(&aw.Icon{Value: gcpService.GetIcon()})
 }
 
-func AddSubServiceToWorkflow(wf *aw.Workflow, gcpService, subService GcpService, gcpProject string) {
+func AddSubServiceToWorkflow(wf *aw.Workflow, gcpService, subService gcp.GcpService, gcpProject string) {
 	title := gcpService.Id + " " + subService.Id
 	subtitle := ""
 
@@ -135,22 +154,19 @@ func AddSubServiceToWorkflow(wf *aw.Workflow, gcpService, subService GcpService,
 		subtitle += " – " + subService.Description
 	}
 
+	searcher := searchers.SearchersByServiceId[gcpService.Id+"_"+subService.Id]
+	if searcher != nil {
+		subtitle += "🔎 "
+	}
+
 	wf.NewItem(title).
 		Valid(true).
 		Var("action", "open-url").
 		Subtitle(subtitle).
 		Autocomplete(gcpService.Id + " " + subService.Id + " ").
 		UID(gcpService.Id).
-		Arg(fmt.Sprintf("%s?project=%s", gcpService.Url, gcpProject)).
-		Icon(&aw.Icon{Value: GetIcon(&gcpService)})
-}
-
-func GetIcon(gcpService *GcpService) string {
-	iconPath := fmt.Sprintf("images/%s.png", gcpService.Id)
-	if _, err := os.Stat(iconPath); err != nil {
-		return "images/gcp.png"
-	}
-	return iconPath
+		Arg(fmt.Sprintf("%s?project=%s", subService.Url, gcpProject)).
+		Icon(&aw.Icon{Value: gcpService.GetIcon()})
 }
 
 func GetCurrentGCPProject() (string, error) {
