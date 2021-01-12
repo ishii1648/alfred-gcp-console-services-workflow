@@ -76,3 +76,9 @@
     - id: monitoring
       name: Monitoring
       url: https://console.cloud.google.com/storage/monitoring
+
+- id: scheduler
+  name: Cloud Scheduler
+  short_name: scheduler
+  description: Cloud Scheduler is a fully managed enterprise-grade cron job scheduler
+  url: https://console.cloud.google.com/cloudscheduler
