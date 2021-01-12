@@ -69,3 +69,10 @@
   short_name: GCS
   description: Object storage for companies of all sizes
   url: https://console.cloud.google.com/storage/browser
+  sub_services:
+    - id: browser
+      name: Browser
+      url: https://console.cloud.google.com/storage/browser
+    - id: monitoring
+      name: Monitoring
+      url: https://console.cloud.google.com/storage/monitoring

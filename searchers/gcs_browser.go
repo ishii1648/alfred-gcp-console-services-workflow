@@ -10,13 +10,13 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-type GcsSearcher struct {
+type GcsBrowserSearcher struct {
 	gcpProject string
 	gcpService gcp.GcpService
 }
 
-func (s *GcsSearcher) Search(ctx context.Context, wf *aw.Workflow, gcpProject string, gcpService gcp.GcpService) error {
-	s = &GcsSearcher{
+func (s *GcsBrowserSearcher) Search(ctx context.Context, wf *aw.Workflow, gcpProject string, gcpService gcp.GcpService) error {
+	s = &GcsBrowserSearcher{
 		gcpProject: gcpProject,
 		gcpService: gcpService,
 	}
@@ -32,7 +32,7 @@ func (s *GcsSearcher) Search(ctx context.Context, wf *aw.Workflow, gcpProject st
 	return nil
 }
 
-func (s *GcsSearcher) fetch(ctx context.Context) ([]*storage.BucketAttrs, error) {
+func (s *GcsBrowserSearcher) fetch(ctx context.Context) ([]*storage.BucketAttrs, error) {
 	var bucketAttrs []*storage.BucketAttrs
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -53,7 +53,7 @@ func (s *GcsSearcher) fetch(ctx context.Context) ([]*storage.BucketAttrs, error)
 	return bucketAttrs, nil
 }
 
-func (s *GcsSearcher) addToWorkflow(wf *aw.Workflow, b *storage.BucketAttrs) {
+func (s *GcsBrowserSearcher) addToWorkflow(wf *aw.Workflow, b *storage.BucketAttrs) {
 	wf.NewItem(b.Name).
 		Valid(true).
 		Var("action", "open-url").
