@@ -13,13 +13,13 @@ type Searcher interface {
 var gkeClustersSearcher = &GKEClustersSearcher{}
 var pubSubTopicsSearcher = &PubSubTopicsSearcher{}
 var pubSubSubscriptionsSearcher = &PubSubSubscriptionsSearcher{}
-var gcpBrowserSearcher = &GcsBrowserSearcher{}
+var gcsBrowserSearcher = &GcsBrowserSearcher{}
 
 var SearchersByServiceId map[string]Searcher = map[string]Searcher{
 	"gke_clusters":         gkeClustersSearcher,
 	"pubsub_topics":        pubSubTopicsSearcher,
 	"pubsub_subscriptions": pubSubSubscriptionsSearcher,
-	"gcs_browser":          gcpBrowserSearcher,
+	"gcs_browser":          gcsBrowserSearcher,
 }
 
 // func GetStateEmoji(state string) string {
