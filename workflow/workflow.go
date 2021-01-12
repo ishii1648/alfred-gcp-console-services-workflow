@@ -14,12 +14,15 @@ import (
 )
 
 func Run(wf *aw.Workflow, rawQuery string, ymlPath string) {
+	// log.Println("using workflow cacheDir: " + wf.CacheDir())
+	// log.Println("using workflow dataDir: " + wf.DataDir())
+
 	gcpServices := gcp.ParseConsoleServicesYml(ymlPath)
 	parser := NewParser(strings.NewReader(rawQuery))
 	query := parser.Parse()
 	defer finalize(wf)
 
-	gcpProject, err := GetCurrentGCPProject()
+	gcpProject, err := GetCurrentGCPProject(wf)
 	if err != nil {
 		handleAlertMessage(wf, fmt.Sprintf("failed to get gcp project : %v", err))
 		return
@@ -172,12 +175,14 @@ func AddSubServiceToWorkflow(wf *aw.Workflow, gcpService, subService gcp.GcpServ
 		Icon(&aw.Icon{Value: gcpService.GetIcon()})
 }
 
-func GetCurrentGCPProject() (string, error) {
+func GetCurrentGCPProject(wf *aw.Workflow) (string, error) {
 	var project string
 
 	gcp_config := os.Getenv("ALFRED_GCP_CONSOLE_SERVICES_WORKFLOW_GCP_CONFIG")
 	if gcp_config == "" {
-		return project, fmt.Errorf("You should set environment : ALFRED_GCP_CONSOLE_SERVICES_WORKFLOW_GCP_CONFIG")
+		cacheDirList := strings.Split(wf.CacheDir(), "/")
+		gcp_config = fmt.Sprintf("/%s/%s/.config/gcloud/configurations/config_default", cacheDirList[1], cacheDirList[2])
+		log.Printf("gcp_config : %s", gcp_config)
 	}
 
 	f, err := os.Open(gcp_config)
