@@ -20,7 +20,13 @@
 
 - id: cloudrun
   name: Cloud Run
+  description: Managed compute platform that enables you to run stateless containers that are invocable via web requests or Pub/Sub events
   url: https://console.cloud.google.com/run
+
+- id: cloudfunction
+  name: Cloud Functions
+  description: Scalable pay-as-you-go functions as a service (FaaS) to run your code with zero server management
+  url: https://console.cloud.google.com/functions/list
 
 - id: logging
   name: Operations Logging
@@ -35,6 +41,7 @@
 
 - id: pubsub
   name: Pub/Sub
+  description: Messaging and ingestion for event-driven systems and streaming analytics
   url: https://console.cloud.google.com/cloudpubsub/topic/list
   sub_services:
     - id: topics
@@ -47,7 +54,7 @@
 - id: glb
   name: Load Balancer
   short_name: GLB
-  description: Load balancers distribute incoming network traffic across multiple VM instances to help your application scale.
+  description: Load balancers distribute incoming network traffic across multiple VM instances to help your application scale
   url: https://console.cloud.google.com/net-services/loadbalancing/loadBalancers/list
   sub_services:
     - id: backends
