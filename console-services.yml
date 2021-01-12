@@ -63,3 +63,9 @@
     - id: frontends
       name: frontends
       url: https://console.cloud.google.com/net-services/loadbalancing/frontends/list
+
+- id: gcs
+  name: Cloud Storage
+  short_name: GCS
+  description: Object storage for companies of all sizes
+  url: https://console.cloud.google.com/storage/browser
