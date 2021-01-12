@@ -19,13 +19,14 @@ func (p *Parser) Parse() *Query {
 
 	p.scanner.Split(bufio.ScanWords)
 	for p.scanner.Scan() {
+		count++
 		switch count {
-		case 0:
-			query.ServiceId = p.scanner.Text()
-			count++
 		case 1:
+			query.ServiceId = p.scanner.Text()
+		case 2:
 			query.SubServiceId = p.scanner.Text()
-			count++
+		case 3:
+			query.Filter = p.scanner.Text()
 		default:
 			break
 		}
@@ -37,6 +38,7 @@ func (p *Parser) Parse() *Query {
 type Query struct {
 	ServiceId    string
 	SubServiceId string
+	Filter       string
 	// HasSearchFunc bool
 }
 

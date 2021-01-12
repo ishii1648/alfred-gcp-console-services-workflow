@@ -64,20 +64,20 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string) {
 		}
 		searcher := searchers.SearchersByServiceId[serviceId]
 		if searcher != nil {
-			filterQuery = ""
+			filterQuery = query.Filter
 			err := searcher.Search(ctx, wf, gcpProject, *gcpService)
 			if err != nil {
 				wf.FatalError(err)
 			}
-			return
+		} else {
+			if subService == nil {
+				filterQuery = query.SubServiceId
+				SearchSubServices(wf, *gcpService, gcpProject)
+			} else {
+				AddSubServiceToWorkflow(wf, *gcpService, *subService, gcpProject)
+			}
 		}
 
-		if subService == nil {
-			filterQuery = query.SubServiceId
-			SearchSubServices(wf, *gcpService, gcpProject)
-		} else {
-			AddSubServiceToWorkflow(wf, *gcpService, *subService, gcpProject)
-		}
 	}
 
 	if filterQuery != "" {
