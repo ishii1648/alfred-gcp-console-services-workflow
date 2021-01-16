@@ -13,9 +13,9 @@ import (
 	"github.com/ishii1648/alfred-gcp-console-services-workflow/searchers"
 )
 
-func Run(wf *aw.Workflow, rawQuery string, ymlPath string) {
-	// log.Println("using workflow cacheDir: " + wf.CacheDir())
-	// log.Println("using workflow dataDir: " + wf.DataDir())
+func Run(wf *aw.Workflow, rawQuery string, ymlPath string, forceFetch bool) {
+	log.Println("using workflow cacheDir: " + wf.CacheDir())
+	log.Println("using workflow dataDir: " + wf.DataDir())
 
 	gcpServices := gcp.ParseConsoleServicesYml(ymlPath)
 	parser := NewParser(strings.NewReader(rawQuery))
@@ -63,7 +63,7 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string) {
 		searcher := searchers.SearchersByServiceId[serviceId]
 		if searcher != nil {
 			filterQuery = query.Filter
-			if err := searcher.Search(ctx, wf, gcpProject, *gcpService); err != nil {
+			if err := searcher.Search(ctx, wf, rawQuery, gcpProject, *gcpService, forceFetch); err != nil {
 				wf.FatalError(err)
 			}
 		} else {
@@ -85,6 +85,11 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string) {
 }
 
 func finalize(wf *aw.Workflow) {
+	if wf.IsEmpty() {
+		wf.NewItem("No matching services found").
+			Subtitle("Try another query (example: `gcp gke clusters`)").
+			Icon(aw.IconNote)
+	}
 	wf.SendFeedback()
 }
 
@@ -182,8 +187,8 @@ func GetCurrentGCPProject(wf *aw.Workflow) (string, error) {
 	if gcp_config == "" {
 		cacheDirList := strings.Split(wf.CacheDir(), "/")
 		gcp_config = fmt.Sprintf("/%s/%s/.config/gcloud/configurations/config_default", cacheDirList[1], cacheDirList[2])
-		log.Printf("gcp_config : %s", gcp_config)
 	}
+	log.Printf("gcp_config : %s", gcp_config)
 
 	f, err := os.Open(gcp_config)
 	if err != nil {

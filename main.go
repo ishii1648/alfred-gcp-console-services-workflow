@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"strings"
 
 	aw "github.com/deanishe/awgo"
@@ -10,12 +11,14 @@ import (
 )
 
 var (
-	wf      *aw.Workflow
-	query   string
-	ymlPath string
+	wf         *aw.Workflow
+	forceFetch bool
+	query      string
+	ymlPath    string
 )
 
 func init() {
+	flag.BoolVar(&forceFetch, "fetch", false, "force fetch via GCP instead of cache")
 	flag.StringVar(&query, "query", "", "query to use")
 	flag.StringVar(&ymlPath, "yml_path", "console-services.yml", "query to use")
 	flag.Parse()
@@ -24,9 +27,10 @@ func init() {
 
 func main() {
 	wf.Run(func() {
+		log.Printf("%v", os.Args)
 		log.Printf("running workflow with query: `%s`", query)
 		query = strings.TrimLeft(query, " ")
 
-		workflow.Run(wf, query, ymlPath)
+		workflow.Run(wf, query, ymlPath, forceFetch)
 	})
 }

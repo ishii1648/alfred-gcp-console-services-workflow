@@ -6,5 +6,5 @@ GO_SRCS=$(shell find -f . \( -name \*.go \))
 .PHONY: build
 build:
 	go build -o $(EXEC_BIN)
-	cp console-services.yml $(EXEC_BIN) ~/Library/Application\ Support/Alfred/Alfred.alfredpreferences/workflows/user.workflow.5CDC68D2-492C-4943-BFE1-1F91D789954A/
-	cp -ar images ~/Library/Application\ Support/Alfred/Alfred.alfredpreferences/workflows/user.workflow.5CDC68D2-492C-4943-BFE1-1F91D789954A/
+	cp console-services.yml $(EXEC_BIN) ~/Library/Application\ Support/Alfred/Alfred.alfredpreferences/workflows/user.workflow.FD4FF73D-70AA-4846-9DDF-68753045745E/
+	cp -ar images ~/Library/Application\ Support/Alfred/Alfred.alfredpreferences/workflows/user.workflow.FD4FF73D-70AA-4846-9DDF-68753045745E/

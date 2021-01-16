@@ -15,7 +15,7 @@ type PubSubSubscriptionsSearcher struct {
 	gcpService gcp.GcpService
 }
 
-func (s *PubSubSubscriptionsSearcher) Search(ctx context.Context, wf *aw.Workflow, gcpProject string, gcpService gcp.GcpService) error {
+func (s *PubSubSubscriptionsSearcher) Search(ctx context.Context, wf *aw.Workflow, query string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error {
 	s = &PubSubSubscriptionsSearcher{
 		gcpProject: gcpProject,
 		gcpService: gcpService,

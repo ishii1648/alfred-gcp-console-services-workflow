@@ -7,7 +7,7 @@ import (
 )
 
 type Searcher interface {
-	Search(ctx context.Context, wf *aw.Workflow, gcpProject string, gcpService gcp.GcpService) error
+	Search(ctx context.Context, wf *aw.Workflow, query string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error
 }
 
 var gkeClustersSearcher = &GKEClustersSearcher{}
