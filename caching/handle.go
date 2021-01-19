@@ -1,6 +1,8 @@
 package caching
 
 import (
+	"errors"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -12,7 +14,7 @@ import (
 
 var jobName = "fetch"
 
-func handleExpiredCache(wf *aw.Workflow, cacheName string, rawQuery string) error {
+func handleExpiredCache(wf *aw.Workflow, cacheName string, lastFetchErrPath string, rawQuery string) error {
 	maxCacheAgeSeconds := 180
 	m := os.Getenv("ALFRED_GCP_CONSOLE_SERVICES_WORKFLOW_MAX_CACHE_AGE_SECONDS")
 	if m != "" {
@@ -39,7 +41,27 @@ func handleExpiredCache(wf *aw.Workflow, cacheName string, rawQuery string) erro
 		} else {
 			log.Printf("background job `%s` already running", jobName)
 		}
+
+		return handleFetchErr(wf, lastFetchErrPath)
 	}
 
 	return nil
+}
+
+func handleFetchErr(wf *aw.Workflow, lastFetchErrPath string) error {
+	data, err := ioutil.ReadFile(lastFetchErrPath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			// this file will often not exist, so don't spam logs if it doesn't
+			log.Println(err)
+		}
+		return nil
+	}
+
+	errString := string(data)
+	wf.Configure(aw.SuppressUIDs(true))
+	wf.NewItem(errString).
+		Icon(aw.IconError)
+
+	return errors.New(errString)
 }

@@ -2,26 +2,34 @@ package caching
 
 import (
 	"context"
+	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/cheekybits/genny/generic"
 	aw "github.com/deanishe/awgo"
 )
 
-//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "Entity=*container.Cluster"
+//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "Entity=*container.Cluster,*pubsub.Topic"
 type Entity = generic.Type
 
-type EntityArrayFetcher = func(ctx context.Context, gcpProject string) ([]Entity, error)
+type EntityListFetcher = func(ctx context.Context, gcpProject string) ([]Entity, error)
 
-func LoadEntityArrayFromCache(wf *aw.Workflow, ctx context.Context, cacheName string, fetcher EntityArrayFetcher, forceFetch bool, rawQuery string, gcpProject string) []Entity {
+func LoadEntityListFromCache(wf *aw.Workflow, ctx context.Context, cacheName string, fetcher EntityListFetcher, forceFetch bool, rawQuery string, gcpProject string) []Entity {
+	cacheName += "_" + gcpProject
 	results := []Entity{}
+	lastFetchErrPath := wf.CacheDir() + "/last-fetch-err.txt"
+
 	if forceFetch {
 		log.Printf("fetching from gcp ...")
-
 		results, err := fetcher(ctx, gcpProject)
+
 		if err != nil {
-			log.Printf("failed to fetcher : %v", err)
+			log.Printf("fetch error occurred. writing to %s ...", lastFetchErrPath)
+			ioutil.WriteFile(lastFetchErrPath, []byte(err.Error()), 0600)
 			panic(err)
+		} else {
+			os.Remove(lastFetchErrPath)
 		}
 
 		log.Printf("storing %d results with cache key `%s` to %s ...", len(results), cacheName, wf.CacheDir())
@@ -32,7 +40,7 @@ func LoadEntityArrayFromCache(wf *aw.Workflow, ctx context.Context, cacheName st
 		return results
 	}
 
-	err := handleExpiredCache(wf, cacheName, rawQuery)
+	err := handleExpiredCache(wf, cacheName, lastFetchErrPath, rawQuery)
 	if err != nil {
 		return []Entity{}
 	}

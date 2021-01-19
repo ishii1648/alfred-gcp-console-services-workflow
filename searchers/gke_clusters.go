@@ -13,8 +13,8 @@ import (
 type GKEClustersSearcher struct{}
 
 func (s *GKEClustersSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error {
-	cacheName := getCurrentFilename() + "_" + gcpProject
-	clusters := caching.LoadContainerClusterArrayFromCache(wf, ctx, cacheName, s.fetch, forceFetch, fullQuery, gcpProject)
+	cacheName := getCurrentFilename()
+	clusters := caching.LoadContainerClusterListFromCache(wf, ctx, cacheName, s.fetch, forceFetch, fullQuery, gcpProject)
 
 	for _, cluster := range clusters {
 		s.addToWorkflow(wf, cluster, gcpService, gcpProject)
