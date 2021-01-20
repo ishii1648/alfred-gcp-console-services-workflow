@@ -10,9 +10,9 @@ import (
 	"log"
 	"os"
 
-	"cloud.google.com/go/pubsub"
 	"cloud.google.com/go/storage"
 	aw "github.com/deanishe/awgo"
+	"github.com/ishii1648/alfred-gcp-console-services-workflow/gcp"
 	containerpb "google.golang.org/genproto/googleapis/container/v1"
 )
 
@@ -46,52 +46,6 @@ func LoadContainerpbClusterListFromCache(wf *aw.Workflow, ctx context.Context, c
 	err := handleExpiredCache(wf, cacheName, lastFetchErrPath, rawQuery)
 	if err != nil {
 		return []*containerpb.Cluster{}
-	}
-
-	if wf.Cache.Exists(cacheName) {
-		log.Printf("using cache with key `%s` in %s ...", cacheName, wf.CacheDir())
-		if err := wf.Cache.LoadJSON(cacheName, &results); err != nil {
-			panic(err)
-		}
-	} else {
-		log.Printf("cache with key `%s` did not exist in %s ...", cacheName, wf.CacheDir())
-		wf.NewItem("Fetching ...").
-			Icon(aw.IconInfo)
-	}
-
-	return results
-}
-
-type PubsubTopicListFetcher = func(ctx context.Context, gcpProject string) ([]*pubsub.Topic, error)
-
-func LoadPubsubTopicListFromCache(wf *aw.Workflow, ctx context.Context, cacheName string, fetcher PubsubTopicListFetcher, forceFetch bool, rawQuery string, gcpProject string) []*pubsub.Topic {
-	cacheName += "_" + gcpProject
-	results := []*pubsub.Topic{}
-	lastFetchErrPath := wf.CacheDir() + "/last-fetch-err.txt"
-
-	if forceFetch {
-		log.Printf("fetching from gcp ...")
-		results, err := fetcher(ctx, gcpProject)
-
-		if err != nil {
-			log.Printf("fetch error occurred. writing to %s ...", lastFetchErrPath)
-			ioutil.WriteFile(lastFetchErrPath, []byte(err.Error()), 0600)
-			panic(err)
-		} else {
-			os.Remove(lastFetchErrPath)
-		}
-
-		log.Printf("storing %d results with cache key `%s` to %s ...", len(results), cacheName, wf.CacheDir())
-		if err := wf.Cache.StoreJSON(cacheName, results); err != nil {
-			panic(err)
-		}
-
-		return results
-	}
-
-	err := handleExpiredCache(wf, cacheName, lastFetchErrPath, rawQuery)
-	if err != nil {
-		return []*pubsub.Topic{}
 	}
 
 	if wf.Cache.Exists(cacheName) {
@@ -154,11 +108,11 @@ func LoadStorageBucketAttrsListFromCache(wf *aw.Workflow, ctx context.Context, c
 	return results
 }
 
-type PubsubSubscriptionListFetcher = func(ctx context.Context, gcpProject string) ([]*pubsub.Subscription, error)
+type GcpPubsubSubscriptionListFetcher = func(ctx context.Context, gcpProject string) ([]*gcp.PubsubSubscription, error)
 
-func LoadPubsubSubscriptionListFromCache(wf *aw.Workflow, ctx context.Context, cacheName string, fetcher PubsubSubscriptionListFetcher, forceFetch bool, rawQuery string, gcpProject string) []*pubsub.Subscription {
+func LoadGcpPubsubSubscriptionListFromCache(wf *aw.Workflow, ctx context.Context, cacheName string, fetcher GcpPubsubSubscriptionListFetcher, forceFetch bool, rawQuery string, gcpProject string) []*gcp.PubsubSubscription {
 	cacheName += "_" + gcpProject
-	results := []*pubsub.Subscription{}
+	results := []*gcp.PubsubSubscription{}
 	lastFetchErrPath := wf.CacheDir() + "/last-fetch-err.txt"
 
 	if forceFetch {
@@ -183,7 +137,53 @@ func LoadPubsubSubscriptionListFromCache(wf *aw.Workflow, ctx context.Context, c
 
 	err := handleExpiredCache(wf, cacheName, lastFetchErrPath, rawQuery)
 	if err != nil {
-		return []*pubsub.Subscription{}
+		return []*gcp.PubsubSubscription{}
+	}
+
+	if wf.Cache.Exists(cacheName) {
+		log.Printf("using cache with key `%s` in %s ...", cacheName, wf.CacheDir())
+		if err := wf.Cache.LoadJSON(cacheName, &results); err != nil {
+			panic(err)
+		}
+	} else {
+		log.Printf("cache with key `%s` did not exist in %s ...", cacheName, wf.CacheDir())
+		wf.NewItem("Fetching ...").
+			Icon(aw.IconInfo)
+	}
+
+	return results
+}
+
+type GcpPubsubTopicListFetcher = func(ctx context.Context, gcpProject string) ([]*gcp.PubsubTopic, error)
+
+func LoadGcpPubsubTopicListFromCache(wf *aw.Workflow, ctx context.Context, cacheName string, fetcher GcpPubsubTopicListFetcher, forceFetch bool, rawQuery string, gcpProject string) []*gcp.PubsubTopic {
+	cacheName += "_" + gcpProject
+	results := []*gcp.PubsubTopic{}
+	lastFetchErrPath := wf.CacheDir() + "/last-fetch-err.txt"
+
+	if forceFetch {
+		log.Printf("fetching from gcp ...")
+		results, err := fetcher(ctx, gcpProject)
+
+		if err != nil {
+			log.Printf("fetch error occurred. writing to %s ...", lastFetchErrPath)
+			ioutil.WriteFile(lastFetchErrPath, []byte(err.Error()), 0600)
+			panic(err)
+		} else {
+			os.Remove(lastFetchErrPath)
+		}
+
+		log.Printf("storing %d results with cache key `%s` to %s ...", len(results), cacheName, wf.CacheDir())
+		if err := wf.Cache.StoreJSON(cacheName, results); err != nil {
+			panic(err)
+		}
+
+		return results
+	}
+
+	err := handleExpiredCache(wf, cacheName, lastFetchErrPath, rawQuery)
+	if err != nil {
+		return []*gcp.PubsubTopic{}
 	}
 
 	if wf.Cache.Exists(cacheName) {

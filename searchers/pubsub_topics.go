@@ -15,7 +15,7 @@ type PubSubTopicsSearcher struct{}
 
 func (s *PubSubTopicsSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error {
 	cacheName := getCurrentFilename()
-	topics := caching.LoadPubsubTopicListFromCache(wf, ctx, cacheName, s.fetch, forceFetch, fullQuery, gcpProject)
+	topics := caching.LoadGcpPubsubTopicListFromCache(wf, ctx, cacheName, s.fetch, forceFetch, fullQuery, gcpProject)
 
 	for _, topic := range topics {
 		s.addToWorkflow(wf, topic, gcpService, gcpProject)
@@ -23,8 +23,8 @@ func (s *PubSubTopicsSearcher) Search(ctx context.Context, wf *aw.Workflow, full
 	return nil
 }
 
-func (s *PubSubTopicsSearcher) fetch(ctx context.Context, gcpProject string) ([]*pubsub.Topic, error) {
-	var topics []*pubsub.Topic
+func (s *PubSubTopicsSearcher) fetch(ctx context.Context, gcpProject string) ([]*gcp.PubsubTopic, error) {
+	var topics []*gcp.PubsubTopic
 	client, err := pubsub.NewClient(ctx, gcpProject)
 	if err != nil {
 		return nil, err
@@ -39,15 +39,16 @@ func (s *PubSubTopicsSearcher) fetch(ctx context.Context, gcpProject string) ([]
 		if err != nil {
 			return nil, err
 		}
-		topics = append(topics, t)
+		topic := &gcp.PubsubTopic{Name: t.ID()}
+		topics = append(topics, topic)
 	}
 	return topics, nil
 }
 
-func (s *PubSubTopicsSearcher) addToWorkflow(wf *aw.Workflow, topic *pubsub.Topic, gcpService gcp.GcpService, gcpProject string) {
-	wf.NewItem(topic.ID()).
+func (s *PubSubTopicsSearcher) addToWorkflow(wf *aw.Workflow, topic *gcp.PubsubTopic, gcpService gcp.GcpService, gcpProject string) {
+	wf.NewItem(topic.Name).
 		Valid(true).
 		Var("action", "open-url").
-		Arg(fmt.Sprintf("https://console.cloud.google.com/cloudpubsub/topic/detail/%s?project=%s", topic.ID(), gcpProject)).
+		Arg(fmt.Sprintf("https://console.cloud.google.com/cloudpubsub/topic/detail/%s?project=%s", topic.Name, gcpProject)).
 		Icon(&aw.Icon{Value: gcpService.GetIcon()})
 }
