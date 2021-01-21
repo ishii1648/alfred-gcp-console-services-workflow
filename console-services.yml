@@ -22,6 +22,10 @@
   name: Cloud Run
   description: Managed compute platform that enables you to run stateless containers that are invocable via web requests or Pub/Sub events
   url: https://console.cloud.google.com/run
+  sub_services:
+    - id: services
+      name: Cloud Run Services
+      url: https://console.cloud.google.com/run
 
 - id: cloudfunction
   name: Cloud Functions
@@ -29,7 +33,8 @@
   url: https://console.cloud.google.com/functions/list
 
 - id: logging
-  name: Operations Logging
+  name: Cloud Logging
+  description: Real-time log management and analysis at scale
   url: https://console.cloud.google.com/logs/query
   sub_services:
     - id: explorer
@@ -52,16 +57,19 @@
       url: https://console.cloud.google.com/cloudpubsub/subscription/list
 
 - id: glb
-  name: Load Balancer
+  name: Cloud Load Balancing
   short_name: GLB
   description: Load balancers distribute incoming network traffic across multiple VM instances to help your application scale
   url: https://console.cloud.google.com/net-services/loadbalancing/loadBalancers/list
   sub_services:
-    - id: backends
-      name: backends
+    - id: loadbalancer
+      name: Load Balancer
+      url: https://console.cloud.google.com/net-services/loadbalancing/loadBalancers/list
+    - id: backend
+      name: Backend
       url: https://console.cloud.google.com/net-services/loadbalancing/backends/list
-    - id: frontends
-      name: frontends
+    - id: frontend
+      name: Frontend
       url: https://console.cloud.google.com/net-services/loadbalancing/frontends/list
 
 - id: gcs
@@ -89,7 +97,7 @@
   url: https://console.cloud.google.com/iam-admin/iam
   sub_services:
     - id: iam
-      name: iam
+      name: IAM
       url: https://console.cloud.google.com/iam-admin/iam
     - id: serviceaccount
       name: Service Account
@@ -97,3 +105,24 @@
     - id: role
       name: Role
       url: https://console.cloud.google.com/iam-admin/roles
+
+- id: dataflow
+  name: Cloud Dataflow
+  description: Unified stream and batch data processing that's serverless, fast, and cost-effective
+  url: https://console.cloud.google.com/dataflow/jobs
+  sub_services:
+    - id: job
+      name: Job
+      url: https://console.cloud.google.com/dataflow/jobs
+
+- id: gce
+  name: Compute Engine
+  description: Accelerate your digital transformation with high-performance virtual machines
+  url: https://console.cloud.google.com/compute/instances
+  sub_services:
+    - id: instance
+      name: VM Instance
+      url: https://console.cloud.google.com/compute/instances
+    - id: healthcheck
+      name: Health Check
+      url: https://console.cloud.google.com/compute/healthChecks

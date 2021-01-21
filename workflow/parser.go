@@ -20,13 +20,13 @@ func (p *Parser) Parse() *Query {
 	p.scanner.Split(bufio.ScanWords)
 	for p.scanner.Scan() {
 		count++
-		switch count {
-		case 1:
+		switch c := count; {
+		case c == 1:
 			query.ServiceId = p.scanner.Text()
-		case 2:
+		case c == 2:
 			query.SubServiceId = p.scanner.Text()
-		case 3:
-			query.Filter = p.scanner.Text()
+		case c == 3:
+			query.Filter += p.scanner.Text()
 		default:
 			break
 		}

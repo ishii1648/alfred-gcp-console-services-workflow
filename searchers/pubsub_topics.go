@@ -6,35 +6,26 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	aw "github.com/deanishe/awgo"
+	"github.com/ishii1648/alfred-gcp-console-services-workflow/caching"
 	"github.com/ishii1648/alfred-gcp-console-services-workflow/gcp"
 	"google.golang.org/api/iterator"
 )
 
-type PubSubTopicsSearcher struct {
-	gcpProject string
-	gcpService gcp.GcpService
-}
+type PubSubTopicsSearcher struct{}
 
-func (s *PubSubTopicsSearcher) Search(ctx context.Context, wf *aw.Workflow, gcpProject string, gcpService gcp.GcpService) error {
-	s = &PubSubTopicsSearcher{
-		gcpProject: gcpProject,
-		gcpService: gcpService,
-	}
-
-	topics, err := s.fetch(ctx)
-	if err != nil {
-		return err
-	}
+func (s *PubSubTopicsSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error {
+	cacheName := getCurrentFilename()
+	topics := caching.LoadGcpPubsubTopicListFromCache(wf, ctx, cacheName, s.fetch, forceFetch, fullQuery, gcpProject)
 
 	for _, topic := range topics {
-		s.addToWorkflow(wf, topic)
+		s.addToWorkflow(wf, topic, gcpService, gcpProject)
 	}
 	return nil
 }
 
-func (s *PubSubTopicsSearcher) fetch(ctx context.Context) ([]*pubsub.Topic, error) {
-	var topics []*pubsub.Topic
-	client, err := pubsub.NewClient(ctx, s.gcpProject)
+func (s *PubSubTopicsSearcher) fetch(ctx context.Context, gcpProject string) ([]*gcp.PubsubTopic, error) {
+	var topics []*gcp.PubsubTopic
+	client, err := pubsub.NewClient(ctx, gcpProject)
 	if err != nil {
 		return nil, err
 	}
@@ -48,15 +39,16 @@ func (s *PubSubTopicsSearcher) fetch(ctx context.Context) ([]*pubsub.Topic, erro
 		if err != nil {
 			return nil, err
 		}
-		topics = append(topics, t)
+		topic := &gcp.PubsubTopic{Name: t.ID()}
+		topics = append(topics, topic)
 	}
 	return topics, nil
 }
 
-func (s *PubSubTopicsSearcher) addToWorkflow(wf *aw.Workflow, topic *pubsub.Topic) {
-	wf.NewItem(topic.ID()).
+func (s *PubSubTopicsSearcher) addToWorkflow(wf *aw.Workflow, topic *gcp.PubsubTopic, gcpService gcp.GcpService, gcpProject string) {
+	wf.NewItem(topic.Name).
 		Valid(true).
 		Var("action", "open-url").
-		Arg(fmt.Sprintf("https://console.cloud.google.com/cloudpubsub/topic/detail/%s?project=%s", topic.ID(), s.gcpProject)).
-		Icon(&aw.Icon{Value: s.gcpService.GetIcon()})
+		Arg(fmt.Sprintf("https://console.cloud.google.com/cloudpubsub/topic/detail/%s?project=%s", topic.Name, gcpProject)).
+		Icon(&aw.Icon{Value: gcpService.GetIcon()})
 }
