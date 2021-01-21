@@ -114,3 +114,15 @@
     - id: job
       name: Job
       url: https://console.cloud.google.com/dataflow/jobs
+
+- id: gce
+  name: Compute Engine
+  description: Accelerate your digital transformation with high-performance virtual machines
+  url: https://console.cloud.google.com/compute/instances
+  sub_services:
+    - id: instance
+      name: VM Instance
+      url: https://console.cloud.google.com/compute/instances
+    - id: healthcheck
+      name: Health Check
+      url: https://console.cloud.google.com/compute/healthChecks
