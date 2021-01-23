@@ -33,22 +33,3 @@ func getCurrentFilename() string {
 	baseFile := filepath.Base(current_file)
 	return strings.TrimSuffix(baseFile, filepath.Ext(baseFile))
 }
-
-// func GetStateEmoji(state string) string {
-// 	switch state {
-// 	case ec2.InstanceStateNameRunning:
-// 		return "🟢"
-// 	case ec2.InstanceStateNameShuttingDown:
-// 		return "🟡"
-// 	case ec2.InstanceStateNameStopping:
-// 		return "🟡"
-// 	case ec2.InstanceStateNameStopped:
-// 		return "🔴"
-// 	case ec2.InstanceStateNameTerminated:
-// 		return "🔴"
-// 	case ec2.InstanceStateNamePending:
-// 		return "⚪️"
-// 	}
-
-// 	return "❔"
-// }
