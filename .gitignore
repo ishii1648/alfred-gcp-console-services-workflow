@@ -1,3 +1,5 @@
 alfred-gcp-console-services-workflow
 go.sum
 info.plist.*
+cache_dir
+data_dir

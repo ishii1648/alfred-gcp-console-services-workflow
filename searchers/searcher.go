@@ -14,6 +14,12 @@ type Searcher interface {
 	Search(ctx context.Context, wf *aw.Workflow, query string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error
 }
 
+type SearchResult struct {
+	Title    string
+	Subtitle string
+	Arg      string
+}
+
 var gkeClustersSearcher = &GKEClustersSearcher{}
 var pubSubTopicsSearcher = &PubSubTopicsSearcher{}
 var pubSubSubscriptionsSearcher = &PubSubSubscriptionsSearcher{}
@@ -21,7 +27,7 @@ var gcsBrowserSearcher = &GcsBrowserSearcher{}
 var cloudrunServicesSearcher = &CloudRunServicesSearcher{}
 
 var SearchersByServiceId map[string]Searcher = map[string]Searcher{
-	"gke_clusters":         gkeClustersSearcher,
+	// "gke_clusters":         gkeClustersSearcher,
 	"pubsub_topics":        pubSubTopicsSearcher,
 	"pubsub_subscriptions": pubSubSubscriptionsSearcher,
 	"gcs_browser":          gcsBrowserSearcher,
