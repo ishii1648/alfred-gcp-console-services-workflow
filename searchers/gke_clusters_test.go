@@ -24,14 +24,16 @@ func (s *fakeGKEClustersSearcher) ListClusters(ctx context.Context, req *contain
 }
 
 type GKEClustersTest struct {
-	name     string
-	clusters []*containerpb.Cluster
-	wants    []*SearchResult
+	name       string
+	forceFetch bool
+	clusters   []*containerpb.Cluster
+	wants      []*SearchResult
 }
 
 var gkeClustersTests []GKEClustersTest = []GKEClustersTest{
 	{
-		name: "test1",
+		name:       "test1",
+		forceFetch: true,
 		clusters: []*containerpb.Cluster{
 			{
 				Name:             "test-cluster01",
@@ -64,7 +66,7 @@ func TestSearch(t *testing.T) {
 			s := &GKEClustersSearcher{gke: fakeClient}
 			ctx := context.Background()
 
-			clusters := caching.LoadContainerpbClusterListFromCache(wf, ctx, getCurrentFilename(), s.fetch, true, "", testGcpProject)
+			clusters := caching.LoadContainerpbClusterListFromCache(wf, ctx, getCurrentFilename(), s.fetch, gt.forceFetch, "", testGcpProject)
 			searchResultList = s.getSearchResultList(clusters, testGcpProject)
 
 			for i, searchResult := range searchResultList {
