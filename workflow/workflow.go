@@ -55,7 +55,7 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string, forceFetch bool) {
 	var filterQuery string
 	if gcpService == nil {
 		filterQuery = query.ServiceId
-		SearchServices(wf, gcpServices, gcpProject)
+		workflow.SearchServices(gcpServices, gcpProject)
 	} else {
 		var subService *gcp.GcpService
 		for i := range gcpService.SubServices {
@@ -72,15 +72,19 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string, forceFetch bool) {
 		searcher := searchers.SearchersByServiceId[serviceId]
 		if searcher != nil {
 			filterQuery = query.Filter
-			if err := searcher.Search(ctx, wf, rawQuery, gcpProject, *gcpService, forceFetch); err != nil {
+			results, err := searcher.Search(ctx, wf, rawQuery, gcpProject, forceFetch)
+			if err != nil {
 				wf.FatalError(err)
+			}
+			for _, result := range results {
+				workflow.AddSearchedServiceToWorkflow(*gcpService, result.Title, result.Subtitle, result.Arg)
 			}
 		} else {
 			if subService == nil {
 				filterQuery = query.SubServiceId
-				SearchSubServices(wf, *gcpService, gcpProject)
+				workflow.SearchSubServices(*gcpService, gcpProject)
 			} else {
-				AddSubServiceToWorkflow(wf, *gcpService, *subService, gcpProject)
+				workflow.AddSubServiceToWorkflow(*gcpService, *subService, gcpProject)
 			}
 		}
 
@@ -113,23 +117,23 @@ func (w *Workflow) handleEmptyQuery() {
 	}
 }
 
-func SearchServices(wf *aw.Workflow, gcpServices []gcp.GcpService, gcpProject string) {
+func (w *Workflow) SearchServices(gcpServices []gcp.GcpService, gcpProject string) {
 	for i := range gcpServices {
-		AddServiceToWorkflow(wf, gcpServices[i], gcpProject)
+		w.AddServiceToWorkflow(gcpServices[i], gcpProject)
 	}
 }
 
-func SearchSubServices(wf *aw.Workflow, gcpService gcp.GcpService, gcpProject string) {
+func (w *Workflow) SearchSubServices(gcpService gcp.GcpService, gcpProject string) {
 	if len(gcpService.SubServices) > 0 {
 		for _, subService := range gcpService.SubServices {
-			AddSubServiceToWorkflow(wf, gcpService, subService, gcpProject)
+			w.AddSubServiceToWorkflow(gcpService, subService, gcpProject)
 		}
 		return
 	}
-	AddServiceToWorkflow(wf, gcpService, gcpProject)
+	w.AddServiceToWorkflow(gcpService, gcpProject)
 }
 
-func AddServiceToWorkflow(wf *aw.Workflow, gcpService gcp.GcpService, gcpProject string) {
+func (w *Workflow) AddServiceToWorkflow(gcpService gcp.GcpService, gcpProject string) {
 	title := gcpService.Id
 
 	subtitle := ""
@@ -148,7 +152,7 @@ func AddServiceToWorkflow(wf *aw.Workflow, gcpService gcp.GcpService, gcpProject
 	}
 	subtitle += " – " + gcpService.Description
 
-	wf.NewItem(title).
+	w.wf.NewItem(title).
 		Valid(true).
 		Var("action", "open-url").
 		Subtitle(subtitle).
@@ -158,7 +162,7 @@ func AddServiceToWorkflow(wf *aw.Workflow, gcpService gcp.GcpService, gcpProject
 		Icon(&aw.Icon{Value: gcpService.GetIcon()})
 }
 
-func AddSubServiceToWorkflow(wf *aw.Workflow, gcpService, subService gcp.GcpService, gcpProject string) {
+func (w *Workflow) AddSubServiceToWorkflow(gcpService, subService gcp.GcpService, gcpProject string) {
 	title := gcpService.Id + " " + subService.Id
 	subtitle := ""
 
@@ -178,13 +182,22 @@ func AddSubServiceToWorkflow(wf *aw.Workflow, gcpService, subService gcp.GcpServ
 		subtitle += "🔎 "
 	}
 
-	wf.NewItem(title).
+	w.wf.NewItem(title).
 		Valid(true).
 		Var("action", "open-url").
 		Subtitle(subtitle).
 		Autocomplete(gcpService.Id + " " + subService.Id + " ").
 		UID(gcpService.Id).
 		Arg(fmt.Sprintf("%s?project=%s", subService.Url, gcpProject)).
+		Icon(&aw.Icon{Value: gcpService.GetIcon()})
+}
+
+func (w *Workflow) AddSearchedServiceToWorkflow(gcpService gcp.GcpService, title, subtitle, arg string) {
+	w.wf.NewItem(title).
+		Valid(true).
+		Var("action", "open-url").
+		Subtitle(subtitle).
+		Arg(arg).
 		Icon(&aw.Icon{Value: gcpService.GetIcon()})
 }
 

@@ -7,12 +7,11 @@ import (
 	"strings"
 
 	aw "github.com/deanishe/awgo"
-	"github.com/ishii1648/alfred-gcp-console-services-workflow/gcp"
 )
 
 type Searcher interface {
 	// Search(ctx context.Context, wf *aw.Workflow, query string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error
-	Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) ([]*SearchResult, error)
+	Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, forceFetch bool) ([]*SearchResult, error)
 }
 
 type SearchResult struct {

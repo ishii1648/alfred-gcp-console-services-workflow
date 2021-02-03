@@ -8,7 +8,6 @@ import (
 	aw "github.com/deanishe/awgo"
 	gax "github.com/googleapis/gax-go/v2"
 	"github.com/ishii1648/alfred-gcp-console-services-workflow/caching"
-	"github.com/ishii1648/alfred-gcp-console-services-workflow/gcp"
 	containerpb "google.golang.org/genproto/googleapis/container/v1"
 )
 
@@ -22,7 +21,7 @@ type GKEClustersSearcher struct {
 	gke GKECluster
 }
 
-func (s *GKEClustersSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) ([]*SearchResult, error) {
+func (s *GKEClustersSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, forceFetch bool) ([]*SearchResult, error) {
 	var searchResultList []*SearchResult
 	c, err := container.NewClusterManagerClient(ctx)
 	if err != nil {
@@ -60,15 +59,6 @@ func (s *GKEClustersSearcher) getSearchResultList(clusters []*containerpb.Cluste
 	}
 	return searchResultList
 }
-
-// func (s *GKEClustersSearcher) addToWorkflow(wf *aw.Workflow, cluster *containerpb.Cluster, gcpService gcp.GcpService, gcpProject string) {
-// 	wf.NewItem(cluster.Name).
-// 		Valid(true).
-// 		Var("action", "open-url").
-// 		Subtitle(fmt.Sprintf("%s %s", s.getStatusEmoji(cluster.CurrentNodeCount), cluster.Location)).
-// 		Arg(fmt.Sprintf("https://console.cloud.google.com/kubernetes/clusters/details/%s/%s?project=%s", cluster.Location, cluster.Name, gcpProject)).
-// 		Icon(&aw.Icon{Value: gcpService.GetIcon()})
-// }
 
 func (s *GKEClustersSearcher) getStatusEmoji(clusterSize int32) string {
 	if clusterSize == 0 {
