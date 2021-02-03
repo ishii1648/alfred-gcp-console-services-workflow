@@ -10,7 +10,6 @@ import (
 )
 
 type Searcher interface {
-	// Search(ctx context.Context, wf *aw.Workflow, query string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error
 	Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, forceFetch bool) ([]*SearchResult, error)
 }
 
@@ -27,11 +26,11 @@ var gcsBrowserSearcher = &GcsBrowserSearcher{}
 var cloudrunServicesSearcher = &CloudRunServicesSearcher{}
 
 var SearchersByServiceId map[string]Searcher = map[string]Searcher{
-	"gke_clusters": gkeClustersSearcher,
-	// "pubsub_topics":        pubSubTopicsSearcher,
-	// "pubsub_subscriptions": pubSubSubscriptionsSearcher,
-	// "gcs_browser":          gcsBrowserSearcher,
-	// "cloudrun_services":    cloudrunServicesSearcher,
+	"gke_clusters":         gkeClustersSearcher,
+	"pubsub_topics":        pubSubTopicsSearcher,
+	"pubsub_subscriptions": pubSubSubscriptionsSearcher,
+	"gcs_browser":          gcsBrowserSearcher,
+	"cloudrun_services":    cloudrunServicesSearcher,
 }
 
 func getCurrentFilename() string {
