@@ -13,23 +13,32 @@ import (
 	"github.com/ishii1648/alfred-gcp-console-services-workflow/searchers"
 )
 
+type Workflow struct {
+	wf *aw.Workflow
+}
+
 func Run(wf *aw.Workflow, rawQuery string, ymlPath string, forceFetch bool) {
 	log.Println("using workflow cacheDir: " + wf.CacheDir())
 	log.Println("using workflow dataDir: " + wf.DataDir())
 
+	workflow := &Workflow{
+		wf: wf,
+	}
+
 	gcpServices := gcp.ParseConsoleServicesYml(ymlPath)
 	parser := NewParser(strings.NewReader(rawQuery))
 	query := parser.Parse()
-	defer finalize(wf)
+	defer workflow.finalize()
 
-	gcpProject, err := GetCurrentGCPProject(wf)
-	if err != nil {
-		handleAlertMessage(wf, fmt.Sprintf("failed to get gcp project : %v", err))
+	if query.IsEmpty() {
+		workflow.handleEmptyQuery()
 		return
 	}
 
-	if query.IsEmpty() {
-		handleEmptyQuery(wf)
+	configPath := workflow.getGcpConfigPath()
+	gcpProject, err := GetCurrentGCPProject(configPath)
+	if err != nil {
+		workflow.handleAlertMessage(fmt.Sprintf("failed to get gcp project : %v", err))
 		return
 	}
 
@@ -84,23 +93,22 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string, forceFetch bool) {
 	}
 }
 
-func finalize(wf *aw.Workflow) {
-	if wf.IsEmpty() {
-		wf.NewItem("No matching services found").
+func (w *Workflow) finalize() {
+	if w.wf.IsEmpty() {
+		w.wf.NewItem("No matching services found").
 			Subtitle("Try another query (example: `gcp gke clusters`)").
 			Icon(aw.IconNote)
 	}
-	wf.SendFeedback()
+	w.wf.SendFeedback()
 }
 
-func handleEmptyQuery(wf *aw.Workflow) {
-	log.Println("no search type parsed")
-	wf.NewItem("Search for an GCP Service ...").
+func (w *Workflow) handleEmptyQuery() {
+	w.wf.NewItem("Search for an GCP Service ...").
 		Subtitle("e.g., gke, gcs, cloud run ...")
 
-	if wf.UpdateCheckDue() {
-		if err := wf.CheckForUpdate(); err != nil {
-			wf.FatalError(err)
+	if w.wf.UpdateCheckDue() {
+		if err := w.wf.CheckForUpdate(); err != nil {
+			w.wf.FatalError(err)
 		}
 	}
 }
@@ -180,14 +188,26 @@ func AddSubServiceToWorkflow(wf *aw.Workflow, gcpService, subService gcp.GcpServ
 		Icon(&aw.Icon{Value: gcpService.GetIcon()})
 }
 
-func GetCurrentGCPProject(wf *aw.Workflow) (string, error) {
-	var project string
-
+func (w *Workflow) getGcpConfigPath() string {
 	gcp_config := os.Getenv("ALFRED_GCP_CONSOLE_SERVICES_WORKFLOW_GCP_CONFIG")
 	if gcp_config == "" {
-		cacheDirList := strings.Split(wf.CacheDir(), "/")
+		cacheDirList := strings.Split(w.wf.CacheDir(), "/")
 		gcp_config = fmt.Sprintf("/%s/%s/.config/gcloud/configurations/config_default", cacheDirList[1], cacheDirList[2])
 	}
+	return gcp_config
+}
+
+func (w *Workflow) handleAlertMessage(title string) {
+	w.wf.NewItem(title).
+		Valid(true).
+		Var("action", "open-url").
+		Arg("https://github.com/rkoval/alfred-aws-console-services-workflow/blob/master/CONTRIBUTING.md").
+		Icon(aw.IconNote)
+}
+
+func GetCurrentGCPProject(gcp_config string) (string, error) {
+	var project string
+
 	log.Printf("gcp_config : %s", gcp_config)
 
 	f, err := os.Open(gcp_config)
@@ -218,12 +238,4 @@ func GetCurrentGCPProject(wf *aw.Workflow) (string, error) {
 	project = strings.TrimSpace(project)
 
 	return project, nil
-}
-
-func handleAlertMessage(wf *aw.Workflow, title string) {
-	wf.NewItem(title).
-		Valid(true).
-		Var("action", "open-url").
-		Arg("https://github.com/rkoval/alfred-aws-console-services-workflow/blob/master/CONTRIBUTING.md").
-		Icon(aw.IconNote)
 }
