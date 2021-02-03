@@ -6,33 +6,33 @@ import (
 
 	aw "github.com/deanishe/awgo"
 	"github.com/ishii1648/alfred-gcp-console-services-workflow/caching"
-	"github.com/ishii1648/alfred-gcp-console-services-workflow/gcp"
 	"google.golang.org/api/run/v1"
 )
 
-type CloudRunServicesSearcher struct{}
+const runServiceEndpoint = "https://console.cloud.google.com/run/detail"
 
-func (s *CloudRunServicesSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error {
-	cacheName := getCurrentFilename()
-	services := caching.LoadRunServiceListFromCache(wf, ctx, cacheName, s.fetch, forceFetch, fullQuery, gcpProject)
+type CloudRunServicesSearcher struct {
+	c *run.APIService
+}
 
-	for _, service := range services {
-		if location, ok := service.Metadata.Labels["cloud.googleapis.com/location"]; ok {
-			s.addToWorkflow(wf, location, service.Metadata.Name, gcpService, gcpProject)
-		}
+func (s *CloudRunServicesSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, forceFetch bool) ([]*SearchResult, error) {
+	var searchResultList []*SearchResult
+	c, err := run.NewService(ctx)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	s = &CloudRunServicesSearcher{c: c}
+
+	services := caching.LoadRunServiceListFromCache(wf, ctx, getCurrentFilename(), s.fetch, forceFetch, fullQuery, gcpProject)
+	searchResultList = s.getSearchResultList(services, gcpProject)
+
+	return searchResultList, nil
 }
 
 func (s *CloudRunServicesSearcher) fetch(ctx context.Context, gcpProject string) ([]run.Service, error) {
 	var serviceList []run.Service
 
-	service, err := run.NewService(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := service.Namespaces.Services.List(fmt.Sprintf("namespaces/%s", gcpProject)).Do()
+	resp, err := s.c.Namespaces.Services.List(fmt.Sprintf("namespaces/%s", gcpProject)).Do()
 	if err != nil {
 		return nil, err
 	}
@@ -44,10 +44,16 @@ func (s *CloudRunServicesSearcher) fetch(ctx context.Context, gcpProject string)
 	return serviceList, nil
 }
 
-func (s *CloudRunServicesSearcher) addToWorkflow(wf *aw.Workflow, location string, serviceName string, gcpService gcp.GcpService, gcpProject string) {
-	wf.NewItem(serviceName).
-		Valid(true).
-		Var("action", "open-url").
-		Arg(fmt.Sprintf("https://console.cloud.google.com/run/detail/%s/%s/metrics", location, serviceName)).
-		Icon(&aw.Icon{Value: gcpService.GetIcon()})
+func (s *CloudRunServicesSearcher) getSearchResultList(services []run.Service, gcpProject string) []*SearchResult {
+	var searchResultList []*SearchResult
+	for _, service := range services {
+		if location, ok := service.Metadata.Labels["cloud.googleapis.com/location"]; ok {
+			searchResult := &SearchResult{
+				Title: service.Metadata.Name,
+				Arg:   fmt.Sprintf("%s/%s/%s?project=%s", runServiceEndpoint, location, service.Metadata.Name, gcpProject),
+			}
+			searchResultList = append(searchResultList, searchResult)
+		}
+	}
+	return searchResultList
 }

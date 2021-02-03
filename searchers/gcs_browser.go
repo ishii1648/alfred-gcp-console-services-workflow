@@ -7,30 +7,33 @@ import (
 	"cloud.google.com/go/storage"
 	aw "github.com/deanishe/awgo"
 	"github.com/ishii1648/alfred-gcp-console-services-workflow/caching"
-	"github.com/ishii1648/alfred-gcp-console-services-workflow/gcp"
 	"google.golang.org/api/iterator"
 )
 
-type GcsBrowserSearcher struct{}
+const gcsBucketEndpoint = "https://console.cloud.google.com/storage/browser"
 
-func (s *GcsBrowserSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error {
-	cacheName := getCurrentFilename()
-	topics := caching.LoadStorageBucketAttrsListFromCache(wf, ctx, cacheName, s.fetch, forceFetch, fullQuery, gcpProject)
+type GcsBrowserSearcher struct {
+	c *storage.Client
+}
 
-	for _, topic := range topics {
-		s.addToWorkflow(wf, topic, gcpService, gcpProject)
+func (s *GcsBrowserSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, forceFetch bool) ([]*SearchResult, error) {
+	var searchResultList []*SearchResult
+	c, err := storage.NewClient(ctx)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	s = &GcsBrowserSearcher{c: c}
+
+	bucketAttrs := caching.LoadStorageBucketAttrsListFromCache(wf, ctx, getCurrentFilename(), s.fetch, forceFetch, fullQuery, gcpProject)
+	searchResultList = s.getSearchResultList(bucketAttrs, gcpProject)
+
+	return searchResultList, nil
 }
 
 func (s *GcsBrowserSearcher) fetch(ctx context.Context, gcpProject string) ([]*storage.BucketAttrs, error) {
 	var bucketAttrs []*storage.BucketAttrs
-	client, err := storage.NewClient(ctx)
-	if err != nil {
-		return nil, err
-	}
 
-	it := client.Buckets(ctx, gcpProject)
+	it := s.c.Buckets(ctx, gcpProject)
 	for {
 		bucketAttr, err := it.Next()
 		if err == iterator.Done {
@@ -44,11 +47,15 @@ func (s *GcsBrowserSearcher) fetch(ctx context.Context, gcpProject string) ([]*s
 	return bucketAttrs, nil
 }
 
-func (s *GcsBrowserSearcher) addToWorkflow(wf *aw.Workflow, b *storage.BucketAttrs, gcpService gcp.GcpService, gcpProject string) {
-	wf.NewItem(b.Name).
-		Valid(true).
-		Var("action", "open-url").
-		Subtitle(fmt.Sprintf("%s %s %s", b.LocationType, b.Location, b.StorageClass)).
-		Arg(fmt.Sprintf("https://console.cloud.google.com/storage/browser/%s?project=%s", b.Name, gcpProject)).
-		Icon(&aw.Icon{Value: gcpService.GetIcon()})
+func (s *GcsBrowserSearcher) getSearchResultList(bucketAttrs []*storage.BucketAttrs, gcpProject string) []*SearchResult {
+	var searchResultList []*SearchResult
+	for _, bucketAttr := range bucketAttrs {
+		searchResult := &SearchResult{
+			Title:    bucketAttr.Name,
+			Subtitle: fmt.Sprintf("%s %s %s", bucketAttr.LocationType, bucketAttr.Location, bucketAttr.StorageClass),
+			Arg:      fmt.Sprintf("%s/%s?project=%s", gcsBucketEndpoint, bucketAttr.Name, gcpProject),
+		}
+		searchResultList = append(searchResultList, searchResult)
+	}
+	return searchResultList
 }

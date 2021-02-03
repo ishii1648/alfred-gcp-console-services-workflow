@@ -7,11 +7,16 @@ import (
 	"strings"
 
 	aw "github.com/deanishe/awgo"
-	"github.com/ishii1648/alfred-gcp-console-services-workflow/gcp"
 )
 
 type Searcher interface {
-	Search(ctx context.Context, wf *aw.Workflow, query string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error
+	Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, forceFetch bool) ([]*SearchResult, error)
+}
+
+type SearchResult struct {
+	Title    string
+	Subtitle string
+	Arg      string
 }
 
 var gkeClustersSearcher = &GKEClustersSearcher{}
@@ -33,22 +38,3 @@ func getCurrentFilename() string {
 	baseFile := filepath.Base(current_file)
 	return strings.TrimSuffix(baseFile, filepath.Ext(baseFile))
 }
-
-// func GetStateEmoji(state string) string {
-// 	switch state {
-// 	case ec2.InstanceStateNameRunning:
-// 		return "🟢"
-// 	case ec2.InstanceStateNameShuttingDown:
-// 		return "🟡"
-// 	case ec2.InstanceStateNameStopping:
-// 		return "🟡"
-// 	case ec2.InstanceStateNameStopped:
-// 		return "🔴"
-// 	case ec2.InstanceStateNameTerminated:
-// 		return "🔴"
-// 	case ec2.InstanceStateNamePending:
-// 		return "⚪️"
-// 	}
-
-// 	return "❔"
-// }

@@ -11,26 +11,30 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-type PubSubTopicsSearcher struct{}
+const pubsubTopicEndpoint = "https://console.cloud.google.com/cloudpubsub/topic/detail"
 
-func (s *PubSubTopicsSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error {
-	cacheName := getCurrentFilename()
-	topics := caching.LoadGcpPubsubTopicListFromCache(wf, ctx, cacheName, s.fetch, forceFetch, fullQuery, gcpProject)
+type PubSubTopicsSearcher struct {
+	c *pubsub.Client
+}
 
-	for _, topic := range topics {
-		s.addToWorkflow(wf, topic, gcpService, gcpProject)
+func (s *PubSubTopicsSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, forceFetch bool) ([]*SearchResult, error) {
+	var searchResultList []*SearchResult
+	c, err := pubsub.NewClient(ctx, gcpProject)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	s = &PubSubTopicsSearcher{c: c}
+
+	topics := caching.LoadGcpPubsubTopicListFromCache(wf, ctx, getCurrentFilename(), s.fetch, forceFetch, fullQuery, gcpProject)
+	searchResultList = s.getSearchResultList(topics, gcpProject)
+
+	return searchResultList, nil
 }
 
 func (s *PubSubTopicsSearcher) fetch(ctx context.Context, gcpProject string) ([]*gcp.PubsubTopic, error) {
 	var topics []*gcp.PubsubTopic
-	client, err := pubsub.NewClient(ctx, gcpProject)
-	if err != nil {
-		return nil, err
-	}
 
-	it := client.Topics(ctx)
+	it := s.c.Topics(ctx)
 	for {
 		t, err := it.Next()
 		if err == iterator.Done {
@@ -45,10 +49,14 @@ func (s *PubSubTopicsSearcher) fetch(ctx context.Context, gcpProject string) ([]
 	return topics, nil
 }
 
-func (s *PubSubTopicsSearcher) addToWorkflow(wf *aw.Workflow, topic *gcp.PubsubTopic, gcpService gcp.GcpService, gcpProject string) {
-	wf.NewItem(topic.Name).
-		Valid(true).
-		Var("action", "open-url").
-		Arg(fmt.Sprintf("https://console.cloud.google.com/cloudpubsub/topic/detail/%s?project=%s", topic.Name, gcpProject)).
-		Icon(&aw.Icon{Value: gcpService.GetIcon()})
+func (s *PubSubTopicsSearcher) getSearchResultList(topics []*gcp.PubsubTopic, gcpProject string) []*SearchResult {
+	var searchResultList []*SearchResult
+	for _, topic := range topics {
+		searchResult := &SearchResult{
+			Title: topic.Name,
+			Arg:   fmt.Sprintf("%s/%s?project=%s", pubsubTopicEndpoint, topic.Name, gcpProject),
+		}
+		searchResultList = append(searchResultList, searchResult)
+	}
+	return searchResultList
 }

@@ -11,26 +11,29 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-type PubSubSubscriptionsSearcher struct{}
+const pubsubSubEndpoint = "https://console.cloud.google.com/cloudpubsub/subscription/detail"
 
-func (s *PubSubSubscriptionsSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, gcpService gcp.GcpService, forceFetch bool) error {
-	cacheName := getCurrentFilename()
-	subscriptions := caching.LoadGcpPubsubSubscriptionListFromCache(wf, ctx, cacheName, s.fetch, forceFetch, fullQuery, gcpProject)
+type PubSubSubscriptionsSearcher struct {
+	c *pubsub.Client
+}
 
-	for _, sub := range subscriptions {
-		s.addToWorkflow(ctx, wf, sub, gcpService, gcpProject)
+func (s *PubSubSubscriptionsSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, forceFetch bool) ([]*SearchResult, error) {
+	var searchResultList []*SearchResult
+	c, err := pubsub.NewClient(ctx, gcpProject)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	s = &PubSubSubscriptionsSearcher{c: c}
+
+	subscriptions := caching.LoadGcpPubsubSubscriptionListFromCache(wf, ctx, getCurrentFilename(), s.fetch, forceFetch, fullQuery, gcpProject)
+	searchResultList = s.getSearchResultList(subscriptions, gcpProject)
+
+	return searchResultList, nil
 }
 
 func (s *PubSubSubscriptionsSearcher) fetch(ctx context.Context, gcpProject string) ([]*gcp.PubsubSubscription, error) {
 	var subscriptions []*gcp.PubsubSubscription
-	client, err := pubsub.NewClient(ctx, gcpProject)
-	if err != nil {
-		return nil, err
-	}
-
-	it := client.Subscriptions(ctx)
+	it := s.c.Subscriptions(ctx)
 	for {
 		sub, err := it.Next()
 		if err == iterator.Done {
@@ -47,11 +50,14 @@ func (s *PubSubSubscriptionsSearcher) fetch(ctx context.Context, gcpProject stri
 	return subscriptions, nil
 }
 
-func (s *PubSubSubscriptionsSearcher) addToWorkflow(ctx context.Context, wf *aw.Workflow, sub *gcp.PubsubSubscription, gcpService gcp.GcpService, gcpProject string) {
-	wf.NewItem(sub.Name).
-		Valid(true).
-		Var("action", "open-url").
-		// Subtitle(subtitle).
-		Arg(fmt.Sprintf("https://console.cloud.google.com/cloudpubsub/subscription/detail/%s?project=%s", sub.Name, gcpProject)).
-		Icon(&aw.Icon{Value: gcpService.GetIcon()})
+func (s *PubSubSubscriptionsSearcher) getSearchResultList(subscriptions []*gcp.PubsubSubscription, gcpProject string) []*SearchResult {
+	var searchResultList []*SearchResult
+	for _, sub := range subscriptions {
+		searchResult := &SearchResult{
+			Title: sub.Name,
+			Arg:   fmt.Sprintf("%s/%s?project=%s", pubsubSubEndpoint, sub.Name, gcpProject),
+		}
+		searchResultList = append(searchResultList, searchResult)
+	}
+	return searchResultList
 }
