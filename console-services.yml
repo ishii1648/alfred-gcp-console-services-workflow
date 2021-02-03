@@ -126,3 +126,18 @@
     - id: healthcheck
       name: Health Check
       url: https://console.cloud.google.com/compute/healthChecks
+
+- id: vpc
+  name: VPC Network
+  description: A virtual version of a physical network, implemented inside of Google's production network, using Andromeda.
+  url: https://console.cloud.google.com/networking/networks/list
+  sub_services:
+    - id: network
+      name: VPC Network
+      url: https://console.cloud.google.com/networking/networks/list
+    - id: ip
+      name: Outbound Static IP
+      url: https://console.cloud.google.com/networking/addresses/list
+    - id: firewall
+      name: Firewall
+      url: https://console.cloud.google.com/networking/firewalls/list
