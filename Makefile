@@ -10,4 +10,4 @@ build:
 
 .PHONY: test
 test:
-	go test ./...
+	bash ./test.sh
