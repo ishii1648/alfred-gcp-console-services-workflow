@@ -6,8 +6,7 @@ GO_SRCS=$(shell find -f . \( -name \*.go \))
 .PHONY: build
 build:
 	go build -o $(EXEC_BIN)
-	cp console-services.yml $(EXEC_BIN) ~/Library/Application\ Support/Alfred/Alfred.alfredpreferences/workflows/user.workflow.FD4FF73D-70AA-4846-9DDF-68753045745E/
-	cp -ar images ~/Library/Application\ Support/Alfred/Alfred.alfredpreferences/workflows/user.workflow.FD4FF73D-70AA-4846-9DDF-68753045745E/
+	zip -r $(DIST_FILE) images console-services.yml $(EXEC_BIN) $(PLIST) icon.png
 
 .PHONY: test
 test:
