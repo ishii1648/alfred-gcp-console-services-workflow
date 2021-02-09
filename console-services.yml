@@ -150,3 +150,21 @@
     - id: instance
       name: Instance
       url: https://console.cloud.google.com/sql/instances
+
+- id: monitoring
+  name: Cloud Monitoring
+  discription: Gain visibility into the performance, availability, and health of your applications and infrastructure
+  url: https://console.cloud.google.com/monitoring
+  sub_services:
+    - id: dashboards
+      name: Dashboards
+      url: https://console.cloud.google.com/monitoring/dashboards
+    - id: metrics-explorer
+      name: Metrics Exproler
+      url: https://console.cloud.google.com/monitoring/metrics-explorer
+    - id: alerting
+      name: Alerting
+      url: https://console.cloud.google.com/monitoring/alerting
+    - id: uptime
+      name: Uptime
+      url: https://console.cloud.google.com/monitoring/uptime
