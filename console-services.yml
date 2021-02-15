@@ -168,3 +168,8 @@
     - id: uptime
       name: Uptime
       url: https://console.cloud.google.com/monitoring/uptime
+
+- id: secrets
+  name: Secret Manager
+  description: Store API keys, passwords, certificates, and other sensitive data.
+  url: https://console.cloud.google.com/security/secret-manager
