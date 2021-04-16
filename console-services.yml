@@ -173,3 +173,8 @@
   name: Secret Manager
   description: Store API keys, passwords, certificates, and other sensitive data.
   url: https://console.cloud.google.com/security/secret-manager
+
+- id: memorystore
+  name: MemoryStore
+  description: ""
+  url: https://console.cloud.google.com/memorystore/redis/instances
