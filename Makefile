@@ -8,6 +8,10 @@ build:
 	go build -o $(EXEC_BIN)
 	zip -r $(DIST_FILE) images console-services.yml $(EXEC_BIN) $(PLIST) icon.png
 
+.PHONY: deploy
+deploy: build
+	open $(DIST_FILE)
+
 .PHONY: test
 test:
 	bash ./test.sh
