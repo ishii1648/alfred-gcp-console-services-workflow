@@ -4,14 +4,18 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	aw "github.com/deanishe/awgo"
 	"github.com/ishii1648/alfred-gcp-console-services-workflow/gcp"
 	"github.com/ishii1648/alfred-gcp-console-services-workflow/searchers"
 )
+
+const ProjectCacheFile = "/tmp/alfred-gcp-console-services-workflow/current-project"
 
 type Workflow struct {
 	wf *aw.Workflow
@@ -35,11 +39,24 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string, forceFetch bool) {
 		return
 	}
 
-	configPath := workflow.getGcpConfigPath()
-	gcpProject, err := GetCurrentGCPProject(configPath)
-	if err != nil {
-		workflow.handleAlertMessage(fmt.Sprintf("failed to get gcp project : %v", err))
-		return
+	var gcpProject string
+
+	fileInfo, err := os.Stat(ProjectCacheFile)
+	if err == nil && time.Now().Before(fileInfo.ModTime().Add(1*time.Hour)) {
+		bGCPProject, err := ioutil.ReadFile(ProjectCacheFile)
+		if err != nil {
+			workflow.handleAlertMessage(fmt.Sprintf("failed to read ProjectCacheFile : %v", err))
+		}
+		gcpProject = string(bGCPProject)
+	}
+
+	if gcpProject == "" {
+		configPath := workflow.getGcpConfigPath()
+		gcpProject, err = GetCurrentGCPProject(configPath)
+		if err != nil {
+			workflow.handleAlertMessage(fmt.Sprintf("failed to get gcp project : %v", err))
+			return
+		}
 	}
 
 	ctx := context.Background()
@@ -193,12 +210,21 @@ func (w *Workflow) AddSubServiceToWorkflow(gcpService, subService gcp.GcpService
 }
 
 func (w *Workflow) AddSearchedServiceToWorkflow(gcpService gcp.GcpService, title, subtitle, arg string) {
-	w.wf.NewItem(title).
-		Valid(true).
-		Var("action", "open-url").
-		Subtitle(subtitle).
-		Arg(arg).
-		Icon(&aw.Icon{Value: gcpService.GetIcon()})
+	if gcpService.Id == "project" && arg == "" {
+		w.wf.NewItem(title).
+			Valid(true).
+			Var("output", "write-file").
+			Autocomplete(title + " ").
+			UID(title).
+			Arg(title)
+	} else {
+		w.wf.NewItem(title).
+			Valid(true).
+			Var("action", "open-url").
+			Subtitle(subtitle).
+			Arg(arg).
+			Icon(&aw.Icon{Value: gcpService.GetIcon()})
+	}
 }
 
 func (w *Workflow) getGcpConfigPath() string {

@@ -24,6 +24,8 @@ var pubSubTopicsSearcher = &PubSubTopicsSearcher{}
 var pubSubSubscriptionsSearcher = &PubSubSubscriptionsSearcher{}
 var gcsBrowserSearcher = &GcsBrowserSearcher{}
 var cloudrunServicesSearcher = &CloudRunServicesSearcher{}
+var projectSetSearcher = &ProjectSetSearcher{}
+var projectGetSearcher = &ProjectGetSearcher{}
 
 var SearchersByServiceId map[string]Searcher = map[string]Searcher{
 	"gke_clusters":         gkeClustersSearcher,
@@ -31,6 +33,8 @@ var SearchersByServiceId map[string]Searcher = map[string]Searcher{
 	"pubsub_subscriptions": pubSubSubscriptionsSearcher,
 	"gcs_browser":          gcsBrowserSearcher,
 	"cloudrun_services":    cloudrunServicesSearcher,
+	"project_set":          projectSetSearcher,
+	"project_get":          projectGetSearcher,
 }
 
 func getCurrentFilename() string {

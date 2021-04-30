@@ -39,7 +39,6 @@ type Query struct {
 	ServiceId    string
 	SubServiceId string
 	Filter       string
-	// HasSearchFunc bool
 }
 
 func (q *Query) IsEmpty() bool {
