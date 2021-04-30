@@ -10,7 +10,7 @@ import (
 	aw "github.com/deanishe/awgo"
 )
 
-//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "Entity=*containerpb.Cluster,*storage.BucketAttrs,*gcp.PubsubSubscription,*gcp.PubsubTopic,run.Service"
+//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "Entity=*containerpb.Cluster,*storage.BucketAttrs,*gcp.PubsubSubscription,*gcp.PubsubTopic,run.Service,*cloudresourcemanager.Project"
 type Entity = generic.Type
 
 type EntityListFetcher = func(ctx context.Context, gcpProject string) ([]Entity, error)
