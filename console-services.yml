@@ -188,3 +188,8 @@
   name: MemoryStore
   description: ""
   url: https://console.cloud.google.com/memorystore/redis/instances
+
+- id: nat
+  name: Cloud NAT
+  description: Cloud NAT (network address translation) lets certain resources without external IP addresses create outbound connections to the internet.
+  url: https://console.cloud.google.com/net-services/nat/list
