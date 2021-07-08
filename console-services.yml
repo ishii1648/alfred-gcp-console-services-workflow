@@ -193,3 +193,13 @@
   name: Cloud NAT
   description: Cloud NAT (network address translation) lets certain resources without external IP addresses create outbound connections to the internet.
   url: https://console.cloud.google.com/net-services/nat/list
+
+- id: bigquery
+  name: Big Query
+  description: BigQuery is a serverless, cost-effective and multicloud data warehouse designed to help you turn big data into valuable business insights.
+  url: https://console.cloud.google.com/bigquery
+
+- id: support
+  name: Support
+  description: Standard Support offers unlimited 1:1 technical support for outages and defects, unexpected product behavior, product usage questions, billing issues, and feature requests.
+  url: https://console.cloud.google.com/support/cases
