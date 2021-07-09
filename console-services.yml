@@ -53,6 +53,9 @@
     - id: logrouter
       name: Log Router
       url: https://console.cloud.google.com/logs/router
+    - id: metrics
+      name: Log Base Metrics
+      url: https://console.cloud.google.com/logs/metrics
 
 - id: pubsub
   name: Pub/Sub
