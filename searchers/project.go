@@ -10,11 +10,11 @@ import (
 	"google.golang.org/api/cloudresourcemanager/v1"
 )
 
-type ProjectSetSearcher struct {
+type ProjectSearcher struct {
 	svc *cloudresourcemanager.Service
 }
 
-func (s *ProjectSetSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, forceFetch bool) ([]*SearchResult, error) {
+func (s *ProjectSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQuery string, gcpProject string, forceFetch bool) ([]*SearchResult, error) {
 	var searchResultList []*SearchResult
 
 	c, err := google.DefaultClient(ctx, cloudresourcemanager.CloudPlatformScope)
@@ -26,7 +26,7 @@ func (s *ProjectSetSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQu
 	if err != nil {
 		return nil, err
 	}
-	s = &ProjectSetSearcher{svc: svc}
+	s = &ProjectSearcher{svc: svc}
 
 	projects := caching.LoadCloudresourcemanagerProjectListFromCache(wf, ctx, getCurrentFilename(), s.fetch, forceFetch, fullQuery, gcpProject)
 	searchResultList = s.getSearchResultList(projects)
@@ -34,7 +34,7 @@ func (s *ProjectSetSearcher) Search(ctx context.Context, wf *aw.Workflow, fullQu
 	return searchResultList, nil
 }
 
-func (s *ProjectSetSearcher) fetch(ctx context.Context, gcpProject string) ([]*cloudresourcemanager.Project, error) {
+func (s *ProjectSearcher) fetch(ctx context.Context, gcpProject string) ([]*cloudresourcemanager.Project, error) {
 	resp, err := s.svc.Projects.List().Do()
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (s *ProjectSetSearcher) fetch(ctx context.Context, gcpProject string) ([]*c
 	return resp.Projects, nil
 }
 
-func (s *ProjectSetSearcher) getSearchResultList(projects []*cloudresourcemanager.Project) []*SearchResult {
+func (s *ProjectSearcher) getSearchResultList(projects []*cloudresourcemanager.Project) []*SearchResult {
 	var searchResultList []*SearchResult
 
 	for _, project := range projects {

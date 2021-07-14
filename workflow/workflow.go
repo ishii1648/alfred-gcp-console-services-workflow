@@ -32,6 +32,8 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string, forceFetch bool) {
 	gcpServices := gcp.ParseConsoleServicesYml(ymlPath)
 	parser := NewParser(strings.NewReader(rawQuery))
 	query := parser.Parse()
+	log.Printf("query parsed : %#v", query)
+
 	defer workflow.finalize()
 
 	if query.IsEmpty() {
@@ -83,7 +85,7 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string, forceFetch bool) {
 		}
 
 		serviceId := query.ServiceId
-		if query.SubServiceId != "" {
+		if serviceId != "project" && query.SubServiceId != "" {
 			serviceId += "_" + query.SubServiceId
 		}
 		searcher := searchers.SearchersByServiceId[serviceId]
@@ -96,6 +98,9 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string, forceFetch bool) {
 			for _, result := range results {
 				workflow.AddSearchedServiceToWorkflow(*gcpService, result.Title, result.Subtitle, result.Arg)
 			}
+			if serviceId == "project" {
+				filterQuery = query.SubServiceId
+			}
 		} else {
 			if subService == nil {
 				filterQuery = query.SubServiceId
@@ -104,7 +109,6 @@ func Run(wf *aw.Workflow, rawQuery string, ymlPath string, forceFetch bool) {
 				workflow.AddSubServiceToWorkflow(*gcpService, *subService, gcpProject)
 			}
 		}
-
 	}
 
 	if filterQuery != "" {
