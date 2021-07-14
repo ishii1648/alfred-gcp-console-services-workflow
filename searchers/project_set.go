@@ -2,6 +2,7 @@ package searchers
 
 import (
 	"context"
+	"strings"
 
 	aw "github.com/deanishe/awgo"
 	"github.com/ishii1648/alfred-gcp-console-services-workflow/caching"
@@ -46,6 +47,10 @@ func (s *ProjectSetSearcher) getSearchResultList(projects []*cloudresourcemanage
 	var searchResultList []*SearchResult
 
 	for _, project := range projects {
+		// exluce automate created projects
+		if strings.HasPrefix(project.ProjectId, "sys-") {
+			continue
+		}
 		searchResult := &SearchResult{
 			Title: project.ProjectId,
 		}
