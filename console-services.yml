@@ -205,3 +205,20 @@
   name: Cloud Armor
   description: Google Cloud Armor is a network security service that provides defenses against DDoS and application attacks, and offers a rich set of WAF rules.
   url: https://console.cloud.google.com/net-security/securitypolicies/list
+
+- id: build
+  name: Cloud Build
+  description: Cloud Build is a service that executes your builds on Google Cloud Platform infrastructure.
+  url: https://console.cloud.google.com/cloud-build/builds
+  sub_services:
+    - id: builds
+      name: Builds
+      url: https://console.cloud.google.com/cloud-build/builds
+    - id: triggers
+      name: Triggers
+      url: https://console.cloud.google.com/cloud-build/triggers
+
+- id: artifact
+  name: Artifact Registry
+  description: Artifact Registry is a single place for your organization to manage container images and language packages (such as Maven and npm).
+  url: https://console.cloud.google.com/artifacts

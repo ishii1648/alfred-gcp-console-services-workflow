@@ -51,6 +51,9 @@ func (s *ProjectSearcher) getSearchResultList(projects []*cloudresourcemanager.P
 		if strings.HasPrefix(project.ProjectId, "sys-") {
 			continue
 		}
+		if project.LifecycleState != "ACTIVE" {
+			continue
+		}
 		searchResult := &SearchResult{
 			Title: project.ProjectId,
 		}
