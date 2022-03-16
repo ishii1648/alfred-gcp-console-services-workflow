@@ -222,3 +222,8 @@
   name: Artifact Registry
   description: Artifact Registry is a single place for your organization to manage container images and language packages (such as Maven and npm).
   url: https://console.cloud.google.com/artifacts
+
+- id: endpoints
+  name: Cloud Endpoints
+  description: Cloud Endpoints uses an NGINX-based proxy and distributed architecture for performance and scale.
+  url: https://console.cloud.google.com/endpoints/v2
