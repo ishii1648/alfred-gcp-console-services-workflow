@@ -235,3 +235,8 @@
   name: API & Services
   description: Google Cloud API & Services
   url: https://console.cloud.google.com/apis/dashboard
+
+- id: neg
+  name: Network Endpoint Groups
+  description: A network endpoint group (NEG) is a configuration object that specifies a group of backend endpoints or services.
+  url: https://console.cloud.google.com/compute/networkendpointgroups/list
