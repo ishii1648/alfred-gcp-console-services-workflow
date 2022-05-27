@@ -9,7 +9,7 @@ import (
 	"google.golang.org/api/sqladmin/v1"
 )
 
-const cloudSQLEndpoint = "https://console.cloud.google.com/sql/instances/"
+const cloudSQLEndpoint = "https://console.cloud.google.com/sql/instances"
 
 type CloudSQLSearcher struct {
 	c *sqladmin.Service
@@ -44,7 +44,7 @@ func (s *CloudSQLSearcher) getSearchResultList(instances []*sqladmin.DatabaseIns
 		searchResult := &SearchResult{
 			Title:    instance.Name,
 			Subtitle: fmt.Sprintf("%s %s", s.getStatusEmoji(instance.Settings.ActivationPolicy), instance.GceZone),
-			Arg:      fmt.Sprintf("%s/%s?overview?project=%s", cloudSQLEndpoint, instance.Name, gcpProject),
+			Arg:      fmt.Sprintf("%s/%s/overview?project=%s", cloudSQLEndpoint, instance.Name, gcpProject),
 		}
 		searchResultList = append(searchResultList, searchResult)
 	}
