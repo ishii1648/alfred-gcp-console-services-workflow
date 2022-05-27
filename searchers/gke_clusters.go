@@ -44,7 +44,14 @@ func (s *GKEClustersSearcher) fetch(ctx context.Context, gcpProject string) ([]*
 		return nil, err
 	}
 
-	return resp.Clusters, nil
+	// メンテナンスポリシーが設定されているとJSONパースに失敗するため、強制的に空にする
+	var modifiedClusters []*containerpb.Cluster
+	for _, cluster := range resp.Clusters {
+		cluster.MaintenancePolicy.Window = nil
+		modifiedClusters = append(modifiedClusters, cluster)
+	}
+
+	return modifiedClusters, nil
 }
 
 func (s *GKEClustersSearcher) getSearchResultList(clusters []*containerpb.Cluster, gcpProject string) []*SearchResult {
