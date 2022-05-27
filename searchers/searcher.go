@@ -25,6 +25,7 @@ var pubSubSubscriptionsSearcher = &PubSubSubscriptionsSearcher{}
 var gcsBrowserSearcher = &GcsBrowserSearcher{}
 var cloudrunServicesSearcher = &CloudRunServicesSearcher{}
 var projectSearcher = &ProjectSearcher{}
+var cloudSQLSearcher = &CloudSQLSearcher{}
 
 var SearchersByServiceId map[string]Searcher = map[string]Searcher{
 	"gke_clusters":         gkeClustersSearcher,
@@ -33,6 +34,7 @@ var SearchersByServiceId map[string]Searcher = map[string]Searcher{
 	"gcs_browser":          gcsBrowserSearcher,
 	"cloudrun_services":    cloudrunServicesSearcher,
 	"project":              projectSearcher,
+	"sql_instances":        cloudSQLSearcher,
 }
 
 func getCurrentFilename() string {

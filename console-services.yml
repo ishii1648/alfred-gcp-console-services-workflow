@@ -157,8 +157,8 @@
   description: A fully-managed database service that helps you set up, maintain, manage, and administer your relational databases on Google Cloud Platform
   url: https://console.cloud.google.com/sql/instances
   sub_services:
-    - id: instance
-      name: Instance
+    - id: instances
+      name: Instances
       url: https://console.cloud.google.com/sql/instances
 
 - id: monitoring
