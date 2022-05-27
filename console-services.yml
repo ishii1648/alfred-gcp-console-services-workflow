@@ -112,6 +112,9 @@
     - id: role
       name: Role
       url: https://console.cloud.google.com/iam-admin/roles
+    - id: workload-identity-pools
+      name: Workload Identity Pools
+      url: https://console.cloud.google.com/iam-admin/workload-identity-pools
 
 - id: dataflow
   name: Cloud Dataflow
@@ -222,3 +225,18 @@
   name: Artifact Registry
   description: Artifact Registry is a single place for your organization to manage container images and language packages (such as Maven and npm).
   url: https://console.cloud.google.com/artifacts
+
+- id: endpoints
+  name: Cloud Endpoints
+  description: Cloud Endpoints uses an NGINX-based proxy and distributed architecture for performance and scale.
+  url: https://console.cloud.google.com/endpoints/v2
+
+- id: api
+  name: API & Services
+  description: Google Cloud API & Services
+  url: https://console.cloud.google.com/apis/dashboard
+
+- id: neg
+  name: Network Endpoint Groups
+  description: A network endpoint group (NEG) is a configuration object that specifies a group of backend endpoints or services.
+  url: https://console.cloud.google.com/compute/networkendpointgroups/list
