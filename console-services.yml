@@ -157,6 +157,9 @@
     - id: firewall
       name: Firewall
       url: https://console.cloud.google.com/networking/firewalls/list
+    - id: connector
+      name: Serverless VPC Access
+      url: https://console.cloud.google.com/networking/connectors/list
 
 - id: sql
   name: Cloud SQL
@@ -266,8 +269,3 @@
   name: Cloud Trace
   description: Distributed tracing system that collects latency data from your applications and displays it in the Google Cloud Console.
   url: https://console.cloud.google.com/traces/list
-
-- id: connector
-  name: Serverless VPC Access
-  description: Serverless VPC Access makes it possible for you to connect directly to your Virtual Private Cloud (VPC) network from serverless environments.
-  url: https://console.cloud.google.com/networking/connectors/list
