@@ -30,6 +30,9 @@
     - id: services
       name: Cloud Run Services
       url: https://console.cloud.google.com/run
+    - id: jobs
+      name: Cloud Run Jobs
+      url: https://console.cloud.google.com/run/jobs
 
 - id: cloudfunction
   name: Cloud Functions
@@ -115,6 +118,9 @@
     - id: workload-identity-pools
       name: Workload Identity Pools
       url: https://console.cloud.google.com/iam-admin/workload-identity-pools
+    - id: org-policy
+      name: Organization Policy
+      url: https://console.cloud.google.com/iam-admin/orgpolicies/list
 
 - id: dataflow
   name: Cloud Dataflow
@@ -240,3 +246,28 @@
   name: Network Endpoint Groups
   description: A network endpoint group (NEG) is a configuration object that specifies a group of backend endpoints or services.
   url: https://console.cloud.google.com/compute/networkendpointgroups/list
+
+- id: deploy
+  name: Cloud Deploy
+  description: Google Cloud Deploy makes continuous delivery to GKE and Anthos easy and powerful.
+  url: https://console.cloud.google.com/deploy/delivery-pipelines
+
+- id: certificate
+  name: Certificate Manager
+  description: Certificate Manager's flexible mapping mechanism lets you finely control the assignment of certificates to hostnames.
+  url: https://console.cloud.google.com/security/ccm/list/certificates?referrer=search
+
+- id: dns
+  name: Cloud DNS
+  description: Certificate Manager's flexible mapping mechanism lets you finely control the assignment of certificates to hostnames.
+  url: https://console.cloud.google.com/net-services/dns/zones?referrer=search
+
+- id: trace
+  name: Cloud Trace
+  description: Distributed tracing system that collects latency data from your applications and displays it in the Google Cloud Console.
+  url: https://console.cloud.google.com/traces/list
+
+- id: connector
+  name: Serverless VPC Access
+  description: Serverless VPC Access makes it possible for you to connect directly to your Virtual Private Cloud (VPC) network from serverless environments.
+  url: https://console.cloud.google.com/networking/connectors/list
